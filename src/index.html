@@ -1,0 +1,919 @@
+<html>
+    <body>
+        <link rel="stylesheet" type="text/css" href="./index.css" media="screen">
+
+
+        <script>
+            /*function clickHandler(){
+                const time = "8:00 am";
+
+                const options = {
+                    method: 'POST',
+                    headers:  {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({time})
+                };
+                //fetch('/api', options);
+
+                //send the data, then recieces a response
+                const response = fetch('/api', options).then(res => {
+                    const newResponse = res.json().then(rtn => {
+                        console.log(rtn);
+                    });
+                    //console.log(newResponse);
+                    //console.log(res);
+                    /*const res = fetch('/api', options);
+                    const data = res.json();
+                    console.log(data);*//*
+                });
+            }*/
+            var sendDeckList = [];
+            var usernameVal = "";
+            var passwordVal = "";
+
+            function clickHandler(){
+                const time = "8:00 am";
+
+                const options = {
+                    method: 'POST',
+                    headers:  {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({username: usernameVal,
+                                        password: passwordVal,
+                                        sendDeckList: sendDeckList})
+                };
+                //fetch('/api', options);
+
+                //send the data to the server, then recieces a response from the .post function in the server and logs it to the console
+                const response = fetch('/editDeckList', options).then(res => {
+                    const newResponse = res.json().then(rtn => {
+                        console.log(rtn);
+                    });
+                    //console.log(newResponse);
+                    //console.log(res);
+                    /*const res = fetch('/api', options);
+                    const data = res.json();
+                    console.log(data);*/
+                });
+            }
+
+            function createAccountData(){
+                const time = "8:00 am";
+
+                const options = {
+                    method: 'POST',
+                    headers:  {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({username: usernameVal,
+                                        password: passwordVal,
+                                        sendDeckList: sendDeckList})
+                };
+                //fetch('/api', options);
+
+                //send the data to the server, then recieces a response from the .post function in the server and logs it to the console
+                const response = fetch('/createAccount', options).then(res => {
+                    const newResponse = res.json().then(rtn => {
+                        console.log(rtn);
+                    });
+                });
+            }
+
+            function SignIn(){
+                const holder = document.createElement('div');
+                holder.className = "loginHolder";
+
+                const username = document.createElement('textarea');
+                const password = document.createElement('textarea');
+
+                const loginButton = document.createElement("button");
+                loginButton.innerHTML = 'LOGIN';
+                loginButton.addEventListener('click', function(){
+                    if(username.value != "" && password.value != ""){
+                        usernameVal = username.value;
+                        passwordVal = password.value;
+                        document.body.removeChild(holder);
+                        getDeckList();
+                    }
+                });
+
+                const accountButton = document.createElement("label");
+                accountButton.innerHTML = 'Create Account';
+                accountButton.addEventListener('click', function(){
+                    document.body.removeChild(holder);
+                    CreateAccount();
+                });
+                accountButton.addEventListener('mouseover', function(){
+                    accountButton.style.color = "blue";
+                    accountButton.style.textDecoration = "underline";
+                });
+                accountButton.addEventListener('mouseout', function(){
+                    accountButton.style.color = "";
+                    accountButton.style.textDecoration = "";
+                });
+
+                holder.appendChild(username);
+                holder.appendChild(document.createElement('br'));
+                holder.appendChild(password);
+                holder.appendChild(loginButton);
+                holder.appendChild(document.createElement('br'));
+                holder.appendChild(accountButton);
+
+                document.body.appendChild(holder);
+                username.focus();
+            }
+
+            function CreateAccount(){
+                const holder = document.createElement('div');
+                holder.className = "loginHolder";
+
+                const username = document.createElement('textarea');
+                const password = document.createElement('textarea');
+
+                const loginButton = document.createElement("button");
+                loginButton.innerHTML = 'Create';
+                loginButton.addEventListener('click', function(){
+                    if(username.value != "" && password.value != ""){
+                        usernameVal = username.value;
+                        passwordVal = password.value;
+                        createAccountData();
+                        document.body.removeChild(holder);
+                        testPage(sendDeckList, rightSide, leftSide, topPart);
+                    }
+                });
+
+                holder.appendChild(username);
+                holder.appendChild(password);
+                holder.appendChild(loginButton);
+
+                document.body.appendChild(holder);
+                username.focus();
+            }
+            
+            function HomePage(deckList, rightSide, leftSide, topPart){
+                leftSide.innerHTML = "";
+
+                for(let i = 0; i < deckList.length; i++){
+                    DeckWidget(deckList[i], deckList, rightSide, leftSide);
+                }
+
+
+                const addDeck = document.createElement("button");
+                addDeck.innerHTML = "Add Deck";
+                addDeck.className = "addDeck";
+                addDeck.addEventListener("click", function(){
+                    DeckCreate(deckList, rightSide, leftSide);
+                });
+
+                topPart.appendChild(addDeck);
+            }
+
+            function testPage(deckList, rightSide, leftSide, topPart){
+                leftSide.innerHTML = "";
+                topPart.innerHTML = "";
+
+                for(let i = 0; i < deckList.length; i++){
+                    DeckWidget(deckList[i], deckList, rightSide, leftSide);
+                }
+
+                const banner = document.createElement("label");
+                banner.innerHTML = usernameVal;
+                topPart.appendChild(banner);
+
+                const logoutButton = document.createElement('button');
+                logoutButton.innerHTML = "Logout";
+                logoutButton.addEventListener("click", function(){
+                    leftSide.innerHTML = "";
+                    rightSide.innerHTML = "";
+                    topPart.innerHTML = "";
+                    sendDeckList = [];
+                    SignIn();
+                });
+                logoutButton.className = 'logoutButton';
+                topPart.appendChild(logoutButton);
+
+                const addDeck = document.createElement("button");
+                addDeck.innerHTML = "Add Deck";
+                addDeck.className = "addDeck";
+                addDeck.addEventListener("click", function(){
+                    DeckCreate(deckList, rightSide, leftSide);
+                });
+
+                topPart.appendChild(addDeck);
+            }
+
+            function DeckWidget(deck, deckList, rightSide, leftSide){
+
+                const deckWidget = document.createElement("div");
+                deckWidget.className = 'deckWidget';
+
+                const deckName = document.createElement("h2");
+                deckName.innerHTML = deck.getName();
+
+                const deckSize = document.createElement("label");
+                deckSize.innerHTML = "SIZE: " + deck.length();
+
+                const studyButton = document.createElement("button");
+                studyButton.innerHTML = 'STUDY';
+                studyButton.className = 'widgetButton';
+
+                studyButton.addEventListener("click", function(){
+                    rightSide.innerHTML = "";
+
+                    var normalStudyButton = document.createElement("button");
+                    normalStudyButton.innerHTML = "Normal Study";
+                    normalStudyButton.addEventListener("click", function(){
+                        if(deck.getCardListUnStarred().length() > 0){
+                            rightSide.innerHTML = "";
+                            DeckStudy(deck.getCardListUnStarred(), deckList, rightSide, leftSide);
+                        }
+                    });
+
+                    var starStudyButton = document.createElement("button");
+                    starStudyButton.innerHTML = "Starred Study";
+                    starStudyButton.addEventListener("click", function(){
+                        if(deck.getCardListStarred().length() > 0){
+                            rightSide.innerHTML = "";
+                            DeckStudy(deck.getCardListStarred(), deckList, rightSide, leftSide);
+                        }
+                    });
+                    rightSide.appendChild(normalStudyButton);
+                    rightSide.appendChild(starStudyButton);
+                });
+
+                const deleteWidget = document.createElement("button");
+                deleteWidget.innerHTML = "DELETE";
+                deleteWidget.className = "deleteButton2";
+                deleteWidget.addEventListener("mouseover", function(){
+                    deleteWidget.style.backgroundColor = "red";
+                });
+                deleteWidget.addEventListener("mouseout", function(){
+                    deleteWidget.style.backgroundColor = "";
+                });
+
+                deleteWidget.addEventListener("click", function(){
+                    for(let i = 0; i < deckList.length; i++){
+                        if(deckList[i].getName() == deck.getName()){
+                            deckList.splice(i, 1);
+                            break;
+                        }
+                    }
+                    clickHandler();
+                    leftSide.removeChild(deckWidget);
+                    rightSide.innerHTML = "";
+                });
+
+                const editButton = document.createElement("button");
+                editButton.innerHTML = "EDIT";
+
+                editButton.addEventListener("click", function(){
+                    DeckEdit(deck, deckList, rightSide, leftSide);
+                });
+
+                deckWidget.appendChild(deckName);
+                deckWidget.appendChild(studyButton);
+                deckWidget.appendChild(deleteWidget);
+                deckWidget.appendChild(editButton);
+                deckWidget.appendChild(deckSize);
+                leftSide.appendChild(deckWidget);
+
+
+            }
+            function DeckCreate(deckList, rightSide, leftSide){
+                rightSide.innerHTML = "";
+
+                var tempDeck = new Deck("TEMP");
+
+                var tempCardList = [];
+
+                const buttonArray = document.createElement("div");
+                buttonArray.className = "buttonArray";
+
+                const saveButton = document.createElement("button");
+                saveButton.innerHTML = "Save";
+                saveButton.addEventListener("click", function(){
+                    if(nameArea.value != ""){
+                        var rtnDeck = new Deck(nameArea.value);
+                        for(let i = 0; i < tempCardList.length; i++){
+                            rtnDeck.addCard(new Card(tempCardList[i].getElementsByClassName("a")[0].value, tempCardList[i].getElementsByClassName("b")[0].value));
+                            if(tempCardList[i].getElementsByClassName("c")[0].style.backgroundColor == "gold"){
+                                rtnDeck.getCard(i).setStar();
+                            }
+                        }
+                        deckList.push(rtnDeck);
+                        clickHandler();
+                        rightSide.innerHTML = "";
+                        testPage(deckList, rightSide, leftSide, topPart);
+                        DeckEdit(rtnDeck, deckList, rightSide, leftSide);
+                    }
+                });
+                buttonArray.appendChild(saveButton);
+
+                const nameArea = document.createElement("textArea");
+                buttonArray.appendChild(nameArea);
+
+                rightSide.appendChild(buttonArray);
+
+                CreateCard(tempDeck, tempCardList, rightSide);
+            }
+
+            function DeckEdit(deck, deckList, rightSide, leftSide){
+                rightSide.innerHTML = "";
+
+                var tempCardList = [];
+
+                var tempDeck = new Deck("TEMP");
+                for(let i = 0; i < deck.length(); i++){
+                    tempDeck.addCard(new Card(deck.getCard(i).getFront(), deck.getCard(i).getBack()));
+                    if(deck.getCard(i).getStar()){
+                        tempDeck.getCard(i).setStar();
+                    }
+                }
+
+                const buttonArray = document.createElement("div");
+                buttonArray.className = "buttonArray";
+
+                const saveButton = document.createElement("button");
+                saveButton.innerHTML = "Save";
+                saveButton.addEventListener("click", function(){
+                    if(nameArea.value != 0){
+                        var rtnDeck = new Deck(nameArea.value);
+                        for(let i = 0; i < tempCardList.length; i++){
+                            rtnDeck.addCard(new Card(tempCardList[i].getElementsByClassName("a")[0].value, tempCardList[i].getElementsByClassName("b")[0].value));
+                            if(tempCardList[i].getElementsByClassName("c")[0].style.backgroundColor == "gold"){
+                                rtnDeck.getCard(i).setStar();
+                            }
+                        }
+                        for(let i = 0; i < deckList.length; i++){
+                            if(deckList[i].getName() == deck.getName()){
+                                deckList[i] = rtnDeck;
+                                break;
+                            }
+                        }
+                        clickHandler();
+                        testPage(deckList, rightSide, leftSide, topPart);
+                        rightSide.innerHTML = '';
+                        deckEdit(deck, deckList,rightSide, leftSide);
+                    }
+                });
+                buttonArray.appendChild(saveButton);
+
+                const nameArea = document.createElement("textArea");
+                nameArea.value = deck.getName();
+                buttonArray.appendChild(nameArea);
+
+                rightSide.appendChild(buttonArray);
+
+                CreateCard(tempDeck, tempCardList, rightSide);
+
+                for(let i = 0; i < deck.length(); i++){
+                    tempCardList.push(FlashCardEdit(tempDeck.getCard(i), tempDeck, tempCardList, rightSide));
+                }
+            }
+
+            function CreateCard(tempDeck, tempCardList, rightSide){
+                var div = document.createElement("div");
+                div.className = 'cardCreator';
+                
+                var frontText = document.createElement("label");
+                frontText.innerHTML = 'FRONT:   ';
+                div.appendChild(frontText);
+                var front = document.createElement("textarea");
+                div.appendChild(front);
+                var br = document.createElement("br");
+                
+                var backText = document.createElement("label");
+                backText.innerHTML = 'BACK:   ';
+                backText.className = "backtext";
+                div.appendChild(backText);
+                var back = document.createElement("textarea");
+                div.appendChild(back);
+                div.appendChild(br);
+
+                var createButton = document.createElement("button");
+                createButton.innerHTML = 'Create Card';
+                
+                //when creating a new card while editing
+                createButton.addEventListener("click", function(){
+                    if(front.value != '' && back.value != ''){
+                        const newCard = new Card(front.value, back.value);
+                        tempCardList.push(FlashCardEdit(newCard, tempDeck, tempCardList, rightSide));
+                        front.value = "";
+                        back.value = "";
+                        front.focus();
+                    } 
+                });
+
+                div.appendChild(createButton);
+                rightSide.appendChild(div);
+            }
+
+            function FlashCardEdit(card, deck, tempDeck, rightSide){
+                var checkDup = false;
+
+                const newCard = document.createElement("div");
+                    
+                newCard.className = "flashCardEdit";
+
+                const frontSide = document.createElement("textArea");
+                frontSide.innerHTML = card.getFront();
+                frontSide.className = "a";
+                const backSide = document.createElement("textArea");
+                backSide.innerHTML = card.getBack();
+                backSide.className = "b";
+                newCard.appendChild(frontSide);
+                newCard.appendChild(backSide);
+
+                var deleteButton = document.createElement("button");
+                deleteButton.innerHTML = 'DELETE';
+                deleteButton.className = "deleteButton";
+                deleteButton.addEventListener("mouseover", function(){
+                    deleteButton.style.backgroundColor = "red";
+                });
+                deleteButton.addEventListener("mouseout", function(){
+                    deleteButton.style.backgroundColor = "";
+                });
+                deleteButton.addEventListener("click", function(){
+                    deck.removeCardName(card.getFront(), card.getBack());
+                    rightSide.removeChild(newCard);
+                    tempDeck.splice(tempDeck.indexOf(newCard), 1);
+                });
+                newCard.appendChild(deleteButton);
+
+                const starButton2 = document.createElement("button");
+                starButton2.innerHTML = 'Star';
+                starButton2.className = "starButton";
+                starButton2.className = "c";
+                if(card.getStar()){
+                    starButton2.style.backgroundColor = "gold";
+                }
+                starButton2.addEventListener("click", function(){
+                    card.setStar();
+                    if(starButton2.style.backgroundColor == "gold"){
+                        starButton2.style.backgroundColor = "";
+                    }
+                    else{
+                        starButton2.style.backgroundColor = "gold";
+                    }
+                });
+                newCard.appendChild(starButton2);
+
+
+                rightSide.appendChild(newCard);
+                return newCard;  
+                
+            }
+
+            function DeckStudy(deck, deckList, rightSide, leftSide){
+
+                var cnt = 0;
+
+                const div = document.createElement("div");
+
+                const buttonArray = document.createElement("div");
+                buttonArray.className = "buttonArray";
+
+                const cardCounter = document.createElement("text");
+                function createCardCounter(){
+                    if(cnt + 1 <= deck.length()){
+                        cardCounter.innerHTML = "CARD: " + (cnt + 1) + " / " + deck.length();
+                    }
+                    else{
+                        cardCounter.innerHTML = "END";
+                    }
+                    cardCounter.className = 'cardcounter';
+                }
+
+                if(deck.length() != 0){
+                    createCardCounter();
+                }
+
+                buttonArray.appendChild(cardCounter);
+                rightSide.appendChild(buttonArray);
+
+                var can = FlashCardView(deck.getCard(cnt));
+
+
+                const nextButton = document.createElement("button");
+                nextButton.innerHTML = 'NEXT';
+                nextButton.style = "";
+                nextButton.className = 'nextButton';
+                if(cnt == deck.length() - 1){
+                    nextButton.style.opacity = "50%";
+                }
+                nextButton.addEventListener("click", function(){
+                    if(cnt < deck.length() - 1){
+                        prevButton.style = "100%";
+                        div.removeChild(can);
+                        div.removeChild(nextButton);
+                        div.removeChild(prevButton);
+                        //document.body.removeChild(cardCounter);
+                        cnt++;
+                        can = FlashCardView(deck.getCard(cnt));
+                        div.appendChild(can);
+                        createCardCounter();
+                        div.appendChild(nextButton);
+                        div.appendChild(prevButton);
+                    }
+                    if(cnt == deck.length() - 1){
+                        nextButton.style.opacity = "50%";
+                    }
+                });
+
+                const prevButton = document.createElement("button");
+                prevButton.innerHTML = 'PREVIOUS';
+                prevButton.className = 'nextButton';
+                prevButton.style = "";
+                prevButton.style.opacity = "50%";
+                prevButton.addEventListener("click", function(){
+                    if(cnt > 0){
+                        nextButton.style = "100%";
+                        div.removeChild(can);
+                        div.removeChild(nextButton);
+                        div.removeChild(prevButton);
+                        //document.body.removeChild(cardCounter);
+                        cnt--;
+                        can =  FlashCardView(deck.getCard(cnt));
+                        div.appendChild(can);
+                        createCardCounter();
+                        div.appendChild(nextButton);
+                        div.appendChild(prevButton);
+                    }
+                    if(cnt == 0){
+                        prevButton.style.opacity = "50%";
+                    }
+                });
+                div.appendChild(can);
+                div.appendChild(nextButton);
+                div.appendChild(prevButton);
+
+                rightSide.appendChild(div);
+            }
+
+            function FlashCardView(card, deck){
+                //flash Card has front, back, flip button, delete button, star button
+
+                const can = document.createElement("div");
+                can.className = "flashCardView";
+
+                const frontSide = document.createElement("h2");
+                frontSide.innerHTML = card.getFront();
+                can.appendChild(frontSide);
+                var front = true;
+                
+                var flipButton = document.createElement("button");
+                flipButton.innerHTML = "FLIP";
+
+                flipButton.addEventListener("click", function(){
+                    if(front){
+                        frontSide.innerHTML = card.getBack();
+                        front = false;
+                    }
+                    else{
+                        frontSide.innerHTML = card.getFront();
+                        front = true;
+                    }
+                    
+                    
+                });
+                can.appendChild(flipButton);
+
+                var starButton = document.createElement("button");
+                starButton.innerHTML = 'Star';
+                starButton.className = "starButton";
+
+                if(card.getStar()){
+                    starButton.style.backgroundColor = "gold";
+                }
+                starButton.addEventListener("click", function(){
+                    card.setStar();
+                    if(starButton.style.backgroundColor == "gold"){
+                        starButton.style.backgroundColor = "";
+                    }
+                    else{
+                        starButton.style.backgroundColor = "gold";
+                    }
+                    clickHandler();
+                });
+                can.appendChild(starButton);
+                //document.body.appendChild(can);
+                return can;
+            }
+
+            class Card{
+
+                constructor(front, back) {
+                    this.front = front;
+                    this.back = back;
+                    this.star = false;
+                }
+
+                getFront(){
+                    return this.front;
+                }
+
+                getBack(){
+                    return this.back;
+                }
+
+                getStar(){
+                    return this.star;
+                }
+
+                setFront(front){
+                    this.front = front;
+                }
+
+                setBack(back){
+                    this.back = back;
+                }
+
+                setStar(){
+                    if(this.star){
+                        this.star =  false;
+                    }
+                    else{
+                        this.star = true;
+                    }
+                }
+            }
+
+            class Deck{
+
+                constructor(name){
+                    this.name = name;
+                    this.cardList = [];
+                }
+
+                length(){
+                    return this.cardList.length;
+                }
+
+                getName(){
+                    return this.name;
+                }
+
+                setName(name){
+                this.name = name;
+                }
+
+                getCardList(){
+                    return this.cardList;
+                }
+
+                getCardListUnStarred(){
+                    var temp = new Deck(this.name);
+                    for(let i = 0; i < this.cardList.length; i++){
+                        if(!this.cardList[i].getStar()){
+                            temp.addCard(this.cardList[i]);
+                        }
+                    }
+                    return temp;
+                }
+
+                getCardListStarred(){
+                    var temp = new Deck(this.name);
+                    for(let i = 0; i < this.cardList.length; i++){
+                        if(this.cardList[i].getStar()){
+                            temp.addCard(this.cardList[i]);
+                        }
+                    }
+                    return temp;
+                }
+
+                addCard(card){
+                    this.cardList.push(card);
+                }
+
+                removeCard(idx){
+                    if(idx < 0 || idx >= this.cardList.length){
+                        throw new Error("idx not in cardList");
+                    }
+                    this.cardList.splice(idx, 1);
+                }
+
+                removeCardName(front, back){
+                    for(let i = 0; i < this.cardList.length; i++){
+                        if(this.cardList[i].getFront() == front 
+                        && this.cardList[i].getBack() == back){
+                            this.cardList.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+
+                getCard(idx){
+                    if(idx < 0 || idx >= this.cardList.length){
+                        throw new Error("idx not in cardList");
+                    }
+                    return this.cardList[idx];
+                }
+
+                getCardName(front, back){
+                    for(let i = 0; i < this.cardList.length; i++){
+                        if(this.cardList[i].getFront() == front 
+                        && this.cardList[i].getBack() == back){
+                            return this.cardList.getCard(i);
+                        }
+                    }
+                }
+
+                cardExists(front, back){
+                    for(let i = 0; i < this.cardList.length; i++){
+                        if(this.cardList[i].getFront() == front 
+                        && this.cardList[i].getBack() == back){
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            var bing = [];
+            /*
+            const getData = await fetch('/getData').then(res => {
+                //const newResponse = res.json().then(rtn => {
+                    //console.log(rtn);
+                //});
+                const newResponse = res.text().then(result => {
+                    console.log(result);
+                    newList = result;
+                });
+                //console.log(res.text());
+                //newList = res;
+            });
+            */
+           var newString;
+           var sendDeckList = [];
+            //getData();
+            async function getData(){
+                const response = await fetch('/getData');
+                const data = await response.text();
+                console.log(data);
+
+                /*
+                var sendDeckList = [];
+                var deckList = data.toString().split("\n");
+                for(i in deckList) {
+                    var tempDeck = JSON.parse(deckList[i]).deckList;
+                    for(i in tempDeck){
+                        var newDeck = new Deck(tempDeck[i].name);
+                        var cardList = tempDeck[i].cardList;
+                        for(i in cardList){
+                            var newCard = new Card(cardList[i].front, cardList[i].back);
+                            newDeck.addCard(newCard);
+                        }
+                        sendDeckList.push(newDeck);
+                    }
+                }
+                var newList = new Deck(sendDeckList[1].getName());
+                newList.addCard(sendDeckList[1].getCard(0).getFront(), sendDeckList[1].getCard(0).getBack());
+                console.log(newList);
+                var bing = [];
+                bing.push(newList);
+                */
+
+                //var sendDeckList = [];
+                var deckList = data.toString();
+                var tempDeck = JSON.parse(deckList).sendDeckList;
+                console.log(tempDeck);
+                for(i in tempDeck){
+                    var newDeck = new Deck(tempDeck[i].name);
+                    console.log(newDeck);
+                    var cardList = tempDeck[i].cardList;
+                    for(i in cardList){
+                        var newCard = new Card(cardList[i].front, cardList[i].back);
+                        newDeck.addCard(newCard);
+                    }
+                    sendDeckList.push(newDeck);
+                }
+                
+                
+                var newList = new Deck("bing");
+                newList.addCard("front", "back");
+                console.log(newList);
+                bing.push(newList);
+                //document.body.appendChild(DeckWidget(newDeck, bing, rightSide, leftSide));
+                testPage(sendDeckList, rightSide, leftSide, topPart);
+                //HomePage(bing, rightSide, leftSide);
+            }
+            console.log(bing);
+                
+            const deckList = [];
+            const row = document.createElement('div');
+            const topPart = document.createElement('div');
+            const leftSide = document.createElement('div');
+            const rightSide = document.createElement('div');
+
+            var newDeck = new Deck("high");
+            deckList.push(newDeck);
+
+            row.className = 'row';
+
+            topPart.className = 'topPart';
+            leftSide.className = "leftSide";
+
+            rightSide.className = "rightSide";
+
+            const br = document.createElement('br');
+
+            row.appendChild(topPart);
+            row.appendChild(br);
+            row.appendChild(leftSide);
+            row.appendChild(rightSide);
+
+            //HomePage(newList, rightSide, leftSide);
+            //getData();
+            function getDeckList(){
+                var databaseDeck;
+                const loginUser = {
+                    method: 'POST',
+                    headers:  {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({username: usernameVal,
+                                        password: passwordVal})
+                };
+                const getDeck = fetch('/login', loginUser).then(res => {
+                    //console.log(res.body);
+                    const response = res.json().then(rtn => {
+                        if(JSON.stringify(rtn).length == 2){
+                            console.log("err");
+                            SignIn();
+                        }
+                        else{
+                        console.log(rtn);
+                        databaseDeck = rtn[0].sendDeckList;
+
+                        console.log(databaseDeck);
+                        for(let i = 0; i < databaseDeck.length; i++){
+                            var tempDeck = new Deck(databaseDeck[i].name);
+                            console.log(databaseDeck[i].name);
+                            for(let j = 0; j < databaseDeck[i].cardList.length; j++){
+                                var tempCard = new Card(databaseDeck[i].cardList[j].front, databaseDeck[i].cardList[j].back);
+                                if(databaseDeck[i].cardList[j].star){
+                                    tempCard.setStar();
+                                }
+                                tempDeck.addCard(tempCard);
+                            }
+                            sendDeckList.push(tempDeck);
+                        }
+                        console.log(sendDeckList);
+                        testPage(sendDeckList, rightSide, leftSide, topPart);
+                        }
+                    })
+                })
+            }
+            //getDeckList();
+            SignIn();
+            /*
+            async function getData(){
+                const response = await fetch('/getData');
+                const data = await response.json();
+                console.log(data);
+            }
+            getData();
+            */
+
+            document.body.appendChild(row);
+
+            /*
+            const getCard = fetch('/getcard').then(res => {
+                console.log(res.front);
+                console.log('card success');
+            });
+            */
+            
+        </script>
+        <script>
+            function HomePage(deckList, rightSide, leftSide){
+                leftSide.innerHTML = "";
+
+                for(let i = 0; i < deckList.length; i++){
+                    //DeckWidget(deckList[i], deckList, rightSide, leftSide);
+                }
+
+                const title = document.createElement("h2");
+                title.innerHTML = "quizify";
+                // document.getElementsByTagName('head')[0].appendChild(title);
+                //document.head.appendChild(title);
+
+                const addDeck = document.createElement("button");
+                addDeck.innerHTML = "Add Deck";
+                addDeck.className = "addDeck";
+                //addDeck.style.marginLeft = "15px";
+                addDeck.addEventListener("click", function(){
+                    //DeckCreate(deckList, rightSide, leftSide);
+                });
+
+                //document.body.appendChild(addDeck);
+                leftSide.appendChild(addDeck);
+            }
+        </script>
+        <script src="App.js" type="module">
+            document.body.appendChild(App());
+        </script>
+    </body>
+</html>
