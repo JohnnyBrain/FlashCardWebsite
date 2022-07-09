@@ -1,0 +1,1 @@
+{"sendDeckList":[{"name":"aa","cardList":[{"front":"a","back":"a","star":false}]},{"name":"Japanese","cardList":[{"front":"d","back":"s","star":false},{"front":"inu","back":"dog","star":false},{"front":"hana","back":"flower","star":false}]}]}
