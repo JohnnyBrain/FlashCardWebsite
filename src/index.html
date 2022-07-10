@@ -837,10 +837,11 @@
                                         password: passwordVal})
                 };
                 const getDeck = fetch('/login', loginUser).then(res => {
-                    //console.log(res.body);
+                    console.log("res.body");
                     const response = res.json().then(rtn => {
+                        console.log('err');
                         if(JSON.stringify(rtn).length == 2){
-                            console.log("err");
+                            console.log('err');
                             SignIn();
                         }
                         else{
