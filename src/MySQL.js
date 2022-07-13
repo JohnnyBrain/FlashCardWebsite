@@ -152,6 +152,58 @@ app.post('/loginAccount', (req, res) => {
         else {
             console.log(results);
 
+            var userListidx = -1
+            for (let i = 0; i < results.length; i++) {
+                if (results[i].username == req.body.username) {
+                    userListidx = i;
+                    break;
+                }
+            }
+            //if user exists (is in the userList table)
+            if (userListidx == -1) {
+                res.json({ found: false });
+                console.log('false');
+            }
+            else {
+                const verify = verifyPassword(results[userListidx].password, req.body.password).then(rtn => {
+                    if (rtn) {
+                        var idx = -1;
+                        let sql = 'SHOW TABLES';
+                        let query = db.query(sql, (err, results) => {
+                            if (err) {
+                                console.log('login error 2');
+                                console.log('high');
+                            }
+                            else {
+                                for (let i = 0; i < results.length; i++) {
+                                    if (results[i].Tables_in_nodemysql == req.body.username) {
+                                        idx = i;
+                                        break;
+                                    }
+                                }
+
+                                let sql = `SELECT * FROM ${results[idx].Tables_in_nodemysql}`;
+                                let query = db.query(sql, (err, rtn) => {
+                                    if (err) {
+                                        console.log('login error 3');
+                                        console.log('high');
+                                    }
+                                    else {
+                                        console.log(rtn);
+                                        res.json(rtn);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else {
+                        res.json({ found: false });
+                        console.log('false');
+                    }
+                });
+            }
+
+            /*
             var exists = false;
             for (let i = 0; i < results.length; i++) {
                 if (results[i].username == req.body.username) {
@@ -195,6 +247,7 @@ app.post('/loginAccount', (req, res) => {
                     break;
                 }
             }
+            */
         }
     });
 });
