@@ -195,81 +195,9 @@ app.post('/loginAccount', (req, res) => {
                     break;
                 }
             }
-            /*
-            //if the username already exists, do nothing and tell client that the new user will not be created
-            if (!exists) {
-                res.json({ found: false });
-                console.log('false');
-            }
-            //create new table with the name of the username and tell client that the new user was created
-            else {
-                var idx = -1;
-                let sql = 'SHOW TABLES';
-                let query = db.query(sql, (err, results) => {
-                    if (err) {
-                        console.log('login error 2');
-                        console.log('high');
-                    }
-                    else {
-
-                        for (let i = 0; i < results.length; i++) {
-                            if (results[i].Tables_in_nodemysql == req.body.username) {
-                                idx = i;
-                                break;
-                            }
-                        }
-
-                        let sql = `SELECT * FROM ${results[idx].Tables_in_nodemysql}`;
-                        let query = db.query(sql, (err, rtn) => {
-                            if (err) {
-                                console.log('login error 3');
-                                console.log('high');
-                            }
-                            else {
-                                console.log(rtn);
-                                res.json(rtn);
-                            }
-                        });
-                    }
-                });
-            }
-            */
         }
     });
 });
-
-
-/*
-app.post('loginAccount', (req, res) => {
-    let sql = 'SHOW TABLES';
-    let query = db.query(sql, (err, results) => {
-        if(err){
-            console.log('error getting data from table');
-            console.log('high');
-        }
-        else{
-            console.log(results[0].Tables_in_nodemysql);
-            
-            var idx = -1;
-            for(let i = 0; i < results.length; i++){
-                if(results[i].Tables_in_nodemysql == req.body.username){
-                    idx = i;
-                    break;
-                }
-            }
-            //if the username already exists, do nothing and tell client that the new user will not be created
-            if(idx == -1){
-                res.json({found: false});
-                console.log('false');
-            }
-            //create new table with the name of the username and tell client that the new user was created
-            else{
-                console.log(results[idx]);
-            }
-        }
-    });
-});
-*/
 
 //hashes the password
 async function hashPassword(password) {
