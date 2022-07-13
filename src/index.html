@@ -77,7 +77,9 @@
                 const response = fetch('/createAccount', options).then(res => {
                     const newResponse = res.json().then(rtn => {
                         console.log(rtn);
+                         return rtn.success;
                     });
+                    console.log("high");
                 });
             }
 
@@ -138,7 +140,8 @@
                     if(username.value != "" && password.value != ""){
                         usernameVal = username.value;
                         passwordVal = password.value;
-                        createAccountData();
+                        const responseAccount = await createAccountData();
+                        console.log(responseAccoutn + " !!!!!");
                         document.body.removeChild(holder);
                         testPage(sendDeckList, rightSide, leftSide, topPart);
                     }

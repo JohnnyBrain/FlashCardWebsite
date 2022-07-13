@@ -6,17 +6,18 @@ const fs = require('fs');
 const mysql = require('mysql');
 const Datastore = require('nedb');
 const argon2 = require('argon2');
+const { resolve } = require('path');
 
 const app = express();
 app.listen(3000, () => console.log('working!'));
 app.use(express.static('src'));
 //makes server able to understand incoming data as json.
-app.use(express.json({limit: '1mb'}));
+app.use(express.json({ limit: '1mb' }));
 //app.use(express.json({strict: false}));
 const database = new Datastore('database.db');
 database.loadDatabase();
 
-function readDataFile(){
+function readDataFile() {
   var sendDeckList = [];
   /*return fs.readFileSync('Data.txt', function(err, data) {
       if(err){
@@ -97,16 +98,16 @@ app.post('/editDeckList', (req, res) => {
   console.log("request recieved");
   console.log(req.body);
   fs.writeFile('./Data.txt', JSON.stringify(/*req.body.time*//* req.body) + "\n", err => {
-    if (err) {
-      console.error(err);
-    }
-    // file written successfully
-  });
-  //what is being sent back to the client
-  res.json({
-    status: 'success',
-    DeckList: req.body
-  });
+  if (err) {
+    console.error(err);
+  }
+  // file written successfully
+});
+//what is being sent back to the client
+res.json({
+  status: 'success',
+  DeckList: req.body
+});
 });
 */
 
@@ -122,10 +123,10 @@ app.post('/editDeckList', (req, res) => {
 
   const hash = hashPassword(req.body.password).then(rtn => {
     req.body.password = rtn;
-    database.update({username: req.body.username}, req.body);
+    database.update({ username: req.body.username }, req.body);
   });
 
-  
+
   //what is being sent back to the client
   res.json({
     status: 'success',
@@ -150,7 +151,7 @@ app.get('/getData', (req, res) => {
   console.log("good");
   //res.send("high");
   database.find({}, (err, data) => {
-    if(err){
+    if (err) {
       console.log(err);
     }
     res.json(data);
@@ -165,27 +166,26 @@ app.post('/login', (req, res) => {
   console.log("good");
   //res.send("high");
 
-  database.find({username: req.body.username}, (err, data) => {
-    if(data.length == 0){
+  database.find({ username: req.body.username }, (err, data) => {
+    if (data.length == 0) {
       console.log("err");
       console.log(data);
       res.json({});
     }
-    else{
+    else {
       //this is just test stuff you can delete it
       console.log(data[0].password);
       console.log(req.body.password);
-      const bing = verifyPassword(data[0].password, req.body.password).then(rtn =>{
+      const bing = verifyPassword(data[0].password, req.body.password).then(rtn => {
         console.log(rtn);
         console.log(data[0]);
       });
 
-      for(let i = 0; i < data.length; i++){
+      for (let i = 0; i < data.length; i++) {
         const verify = verifyPassword(data[i].password, req.body.password).then(rtn => {
-          if(rtn){
+          if (rtn) {
             res.json([data[i]]);
             console.log('login succesful');
-
           }
         })
       }
@@ -214,24 +214,24 @@ app.post('/login', (req, res) => {
     }
   });
   */
-/*
-  const hash = hashPassword(req.body.password).then(rtn => {
-    console.log(rtn);
-    req.body.password = rtn;
-    database.find({username: req.body.username, password: req.body.password}, (err, data) => {
-      if(data.length == 0){
-        console.log("err");
-        res.json({});
-      }
-      else{
-        console.log(data);
-        res.json(data);
-        console.log(data[0].sendDeckList[0].name);
-        console.log(req.body.username);
-      }
+  /*
+    const hash = hashPassword(req.body.password).then(rtn => {
+      console.log(rtn);
+      req.body.password = rtn;
+      database.find({username: req.body.username, password: req.body.password}, (err, data) => {
+        if(data.length == 0){
+          console.log("err");
+          res.json({});
+        }
+        else{
+          console.log(data);
+          res.json(data);
+          console.log(data[0].sendDeckList[0].name);
+          console.log(req.body.username);
+        }
+      });
     });
-  });
-  */
+    */
 
   //console.log(rtnList);
   //rtnList = ['h', 'h'];
@@ -239,7 +239,7 @@ app.post('/login', (req, res) => {
 });
 
 //hashes the password
-async function hashPassword(password){
+async function hashPassword(password) {
   try {
     const hash = await argon2.hash(password);
     return hash;
@@ -249,7 +249,7 @@ async function hashPassword(password){
 }
 
 //checks if a hashed password and the normal password are the same and returns as boolean
-async function verifyPassword(hashPass, password){
+async function verifyPassword(hashPass, password) {
   try {
     const verify = await argon2.verify(hashPass, password);
     return verify;
@@ -261,30 +261,37 @@ async function verifyPassword(hashPass, password){
 app.post('/createAccount', (req, res) => {
   var username = req.body.username;
   var password = req.body.password;
-  var newPass;
-  const hash = hashPassword(password).then(rtn => {
-    console.log(rtn);
-    req.body.password = rtn;
-    database.insert(req.body);
+  database.find({ username: req.body.username }, (err, data) => {
+    console.log(data.length);
+    if (data.length != 0) {
+      console.log("err");
+      console.log(data);
+      res.json({ success: "bad" });
+    }
+    else {
+      const hash = hashPassword(password).then(rtn => {
+        console.log(rtn);
+        req.body.password = rtn;
+        database.insert(req.body);
 
-    const verify = verifyPassword(rtn, password).then(ans => {
-      console.log(ans);
-    });
+        res.json({ success: "good" });
 
-    /*res.json({
-      username: req.body.username,
-      password: rtn
-    });*/
+        /*res.json({
+          username: req.body.username,
+          password: rtn
+        });*/
+      });
+    }
   });
 
   //database.insert(req.body);
 
   //what is being sent back to the client
   //res.json({
-    //status: 'success',
-    //DeckList: req.body
+  //status: 'success',
+  //DeckList: req.body
   //});
-})
+});
 
 
 
