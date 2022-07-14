@@ -276,7 +276,7 @@
                         break;
                     }
                 }
-                clickHandler();
+                saveDeck();
                 leftSide.removeChild(deckWidget);
                 rightSide.innerHTML = "";
             });
@@ -371,7 +371,7 @@
                     saveDeck();
                     testPage(deckList, rightSide, leftSide, topPart);
                     rightSide.innerHTML = '';
-                    DeckEdit(deck, deckList, rightSide, leftSide);
+                    DeckEdit(rtnDeck, deckList, rightSide, leftSide);
                 }
             });
             buttonArray.appendChild(saveButton);
