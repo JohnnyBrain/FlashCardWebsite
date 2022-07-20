@@ -1,316 +1,362 @@
+//to get mysql running in terminal, first turn on the mysql server in system preferences, then in terminal 
+// run  'source ~/.bash_profile' then 'mysql -u root -p' then put in password. can use commands such as 
+// 'show databases;' or 'use <database name>;' where <database name> is the database name then 'show tables;' to show tables
+//  and 'describe <table name>;' to show the fields of the table where <table name> is the table name. 
+// use 'SELECT * FROM <table name>;' to show all data in the table, or replace star with specific value to get that row.
+// use 'exit;' to exit mysql.
 
 
-const { response } = require('express');
 const express = require('express');
-const fs = require('fs');
-const mysql = require('mysql');
-const Datastore = require('nedb');
+const mysql = require('mysql2');
 const argon2 = require('argon2');
-const { resolve } = require('path');
+
+//create connection to server
+const db = mysql.createConnection({
+    user: 'root',
+    host: 'localhost',
+    password: 'turtle77',
+    database: 'nodemysql'
+});
 
 const app = express();
-app.listen(3000, () => console.log('working!'));
-app.use(express.static('src'));
-//makes server able to understand incoming data as json.
+
+app.listen(3000, () => {
+    console.log('server running');
+});
+
+//sending data from client to server will be done in json format
 app.use(express.json({ limit: '1mb' }));
-//app.use(express.json({strict: false}));
-const database = new Datastore('database.db');
-database.loadDatabase();
-
-function readDataFile() {
-  var sendDeckList = [];
-  /*return fs.readFileSync('Data.txt', function(err, data) {
-      if(err){
-        throw err;
-      }
-      var deckList = data.toString().split("\n");
-      for(i in deckList) {
-          //console.log(JSON.parse(deckList[i]).deckList[0].name);
-          var tempDeck = JSON.parse(deckList[i]).deckList;
-          for(i in tempDeck){
-            //var deckName = tempDeck[i].name;
-            var newDeck = new Deck(tempDeck[i].name);
-            var cardList = tempDeck[i].cardList;
-            for(i in cardList){
-              var newCard = new Card(cardList[i].front, cardList[i].back);
-              newDeck.addCard(newCard);
-            }
-            sendDeckList.push(newDeck);
-            //console.log(newDeck.getName());
-            //console.log(newDeck.getCardList());
-            //console.log(deckName);
-          }
-      }
-      //console.log(sendDeckList);
-      //return sendDeckList;
-  });*/
-  /*
-  return fs.readFileSync('Data.txt', function(err, data) {
-    if(err){
-      throw err;
-    }
-    var deckList = data.toString().split("\n");
-    for(i in deckList) {
-        //console.log(JSON.parse(deckList[i]).deckList[0].name);
-        var tempDeck = JSON.parse(deckList[i]).deckList;
-        for(i in tempDeck){
-          //var deckName = tempDeck[i].name;
-          sendDeckList.push([]);
-          sendDeckList[i].push(tempDeck[i].name);
-          var cardList = tempDeck[i].cardList;
-          for(i in cardList){
-            sendDeckList[i].push([cardList[i].front, cardList[i].back]);
-          }
-          //console.log(newDeck.getName());
-          //console.log(newDeck.getCardList());
-          //console.log(deckName);
-        }
-        
-    }
-    //return sendDeckList;
-  });
-  */
-  //console.log(sendDeckList);
-  //return sendDeckList;
-}
 
 
-//connects the server to the client to recieve and send data. Request is what the client sends to the server, ie data. 
-// the ressponse is what the server sends beck to the client, ie a confirmation upon recieving the data.
-app.post('/api', (req, res) => {
-  console.log("request recieved");
-  console.log(req.body);
-  fs.appendFile('./Data.txt', JSON.stringify(/*req.body.time*/ req.body) + "\n", err => {
+app.get('/', function (req, res) {
+    res.sendFile(__dirname + '/mysqlIndex.html'); // change the path to your index.html
+});
+
+//use the index.html (or in this case, the index.css) file in /src
+app.use(express.static('src'));
+
+//connect to the server
+db.connect(err => {
     if (err) {
-      console.error(err);
-    }
-    // file written successfully
-  });
-  //what is being sent back to the client
-  res.json({
-    status: 'success',
-    DeckList: req.body
-  });
-});
-
-/*
-app.post('/editDeckList', (req, res) => {
-  console.log("request recieved");
-  console.log(req.body);
-  fs.writeFile('./Data.txt', JSON.stringify(/*req.body.time*//* req.body) + "\n", err => {
-  if (err) {
-    console.error(err);
-  }
-  // file written successfully
-});
-//what is being sent back to the client
-res.json({
-  status: 'success',
-  DeckList: req.body
-});
-});
-*/
-
-//ONLY WORKS IF NO TWO USERNAMES ARE THE SAME
-app.post('/editDeckList', (req, res) => {
-  console.log("request recieved");
-  console.log(req.body);
-  //database.insert(req.body);
-  //database.insert(req.body[0].sendDeckList);
-
-  //what was used before adding hashing
-  //database.update({username: req.body.username, password: req.body.password}, req.body);
-
-  const hash = hashPassword(req.body.password).then(rtn => {
-    req.body.password = rtn;
-    database.update({ username: req.body.username }, req.body);
-  });
-
-
-  //what is being sent back to the client
-  res.json({
-    status: 'success',
-    DeckList: req.body
-  });
-});
-
-/*
-//sends a response to the client.
-app.get('/getData', (req, res) => {
-    console.log("good");
-    //res.send("high");
-    var rtnList = readDataFile();
-    console.log(rtnList);
-    //rtnList = ['h', 'h'];
-    res.send(rtnList);
-});
-*/
-
-//sends a response to the client.
-app.get('/getData', (req, res) => {
-  console.log("good");
-  //res.send("high");
-  database.find({}, (err, data) => {
-    if (err) {
-      console.log(err);
-    }
-    res.json(data);
-    console.log(data[0].sendDeckList[0].name);
-  });
-  //console.log(rtnList);
-  //rtnList = ['h', 'h'];
-  //res.send(rtnList);
-});
-
-app.post('/login', (req, res) => {
-  console.log("good");
-  //res.send("high");
-
-  database.find({ username: req.body.username }, (err, data) => {
-    if (data.length == 0) {
-      console.log("err");
-      console.log(data);
-      res.json({});
+        console.log('error connecting to server');
     }
     else {
-      //this is just test stuff you can delete it
-      console.log(data[0].password);
-      console.log(req.body.password);
-      const bing = verifyPassword(data[0].password, req.body.password).then(rtn => {
-        console.log(rtn);
-        console.log(data[0]);
-      });
+        console.log('SQL connected');
+    }
+});
 
-      for (let i = 0; i < data.length; i++) {
-        const verify = verifyPassword(data[i].password, req.body.password).then(rtn => {
-          if (rtn) {
-            res.json([data[i]]);
-            console.log('login succesful');
-          }
-        })
-      }
-      //res.json(data);
-      /*
-      console.log(data);
-      res.json(data);
-      console.log(data[0].sendDeckList[0].name);
-      console.log(req.body.username);
-      */
-    }
-  });
+//used to update the deck table when creating or editing a deck
+app.post('/editDeck', (req, res) => {
 
-  /*
-  database.find({username: req.body.username, password: req.body.password}, (err, data) => {
-    if(data.length == 0){
-      console.log("err");
-      console.log(data);
-      res.json({});
-    }
-    else{
-      console.log(data);
-      res.json(data);
-      console.log(data[0].sendDeckList[0].name);
-      console.log(req.body.username);
-    }
-  });
-  */
-  /*
-    const hash = hashPassword(req.body.password).then(rtn => {
-      console.log(rtn);
-      req.body.password = rtn;
-      database.find({username: req.body.username, password: req.body.password}, (err, data) => {
-        if(data.length == 0){
-          console.log("err");
-          res.json({});
+    //empties the table
+    let sql = `TRUNCATE ${req.body.username}`;
+    db.query(sql, (err) => {
+        if (err) {
+            console.log('error truncating table');
         }
-        else{
-          console.log(data);
-          res.json(data);
-          console.log(data[0].sendDeckList[0].name);
-          console.log(req.body.username);
+        else {
+            console.log('table truncated');
         }
-      });
     });
-    */
 
-  //console.log(rtnList);
-  //rtnList = ['h', 'h'];
-  //res.send(rtnList);
+    //stores all the decks in the table
+    for (let i = 0; i < req.body.sendDeckList.length; i++) {
+        var deckNameVal = req.body.sendDeckList[i].name
+        for (let j = 0; j < req.body.sendDeckList[i].cardList.length; j++) {
+            var tempCard = req.body.sendDeckList[i].cardList[j];
+            let post = { deckName: deckNameVal, front: tempCard.front, back: tempCard.back, star: tempCard.star };
+            let sql = `INSERT INTO ${req.body.username} SET ?`;
+            let query = db.query(sql, post, err => {
+                if (err) {
+                    console.log('error inserting data');
+                    console.log(err);
+                }
+                else {
+                    console.log('data inserted into deck succesfully');
+                }
+            });
+        }
+    }
+    console.log(req.body.sendDeckList[0].cardList[0].front);
+});
+
+//creates a new account
+app.post('/createAccount', (req, res) => {
+    if (req.body.username == 'userList') {
+        res.json({ created: false });
+    }
+    else {
+        let sql = 'SELECT * FROM userList';
+        let query = db.query(sql, (err, results) => {
+            //if the database is not online, or server cannot access it
+            if (err) {
+                console.log('error getting data from table');
+                res.json({ created: true });
+            }
+            else {
+                console.log(results[0]);
+
+                var exists = false;
+                for (let i = 0; i < results.length; i++) {
+                    if (results[i].username == req.body.username) {
+                        exists = true;
+                        break;
+                    }
+                }
+                //if the username already exists, do nothing and tell client that the new user will not be created
+                if (exists) {
+                    res.json({ created: false });
+                    console.log('false');
+                }
+                //create new table with the name of the username and tell client that the new user was created
+                else {
+                    let sql = `CREATE TABLE ${req.body.username}(id int AUTO_INCREMENT, deckName VARCHAR(255), front VARCHAR(255), back VARCHAR(255), star VARCHAR(255), PRIMARY KEY(id))`;
+                    db.query(sql, (err) => {
+                        if (err) {
+                            console.log('error creating table');
+                        }
+                        else {
+                            console.log('table created');
+                            res.json({ created: true });
+                        }
+                    });
+
+                    const hash = hashPassword(req.body.password).then(rtn => {
+                        req.body.password = rtn;
+
+                        let post = { username: req.body.username, password: req.body.password, deckListName: req.body.username };
+                        sql = 'INSERT INTO userList SET ?';
+                        let query = db.query(sql, post, err => {
+                            if (err) {
+                                console.log('error inserting data');
+                            }
+                            else {
+                                console.log('data inserted into deck succesfully');
+                            }
+                        });
+                    });
+
+                }
+            }
+        });
+    }
+});
+
+//logs the user in
+app.post('/loginAccount', (req, res) => {
+    let sql = 'SELECT * FROM userList';
+    let query = db.query(sql, (err, results) => {
+        //if the database is not online, or server cannot access the database
+        if (err) {
+            console.log('login error 1');
+            res.json({ found: false });
+            console.log('false');
+        }
+        else {
+            console.log(results);
+
+            var userListidx = -1;
+            for (let i = 0; i < results.length; i++) {
+                if (results[i].username == req.body.username) {
+                    userListidx = i;
+                    break;
+                }
+            }
+            //if user exists (is in the userList table)
+            if (userListidx == -1) {
+                res.json({ found: false });
+                console.log('false');
+            }
+            else {
+                const verify = verifyPassword(results[userListidx].password, req.body.password).then(rtn => {
+                    if (rtn) {
+                        var idx = -1;
+                        let sql = 'SHOW TABLES';
+                        let query = db.query(sql, (err, results) => {
+                            if (err) {
+                                console.log('login error 2');
+                                console.log('high');
+                            }
+                            else {
+                                for (let i = 0; i < results.length; i++) {
+                                    if (results[i].Tables_in_nodemysql == req.body.username) {
+                                        idx = i;
+                                        break;
+                                    }
+                                }
+
+                                let sql = `SELECT * FROM ${results[idx].Tables_in_nodemysql}`;
+                                let query = db.query(sql, (err, rtn) => {
+                                    if (err) {
+                                        console.log('login error 3');
+                                        console.log('high');
+                                    }
+                                    else {
+                                        console.log(rtn);
+                                        res.json(rtn);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else {
+                        res.json({ found: false });
+                        console.log('false');
+                    }
+                });
+            }
+
+            /*
+            var exists = false;
+            for (let i = 0; i < results.length; i++) {
+                if (results[i].username == req.body.username) {
+                    const verify = verifyPassword(results[i].password, req.body.password).then(rtn => {
+                        if (rtn) {
+                            var idx = -1;
+                            let sql = 'SHOW TABLES';
+                            let query = db.query(sql, (err, results) => {
+                                if (err) {
+                                    console.log('login error 2');
+                                    console.log('high');
+                                }
+                                else {
+
+                                    for (let i = 0; i < results.length; i++) {
+                                        if (results[i].Tables_in_nodemysql == req.body.username) {
+                                            idx = i;
+                                            break;
+                                        }
+                                    }
+
+                                    let sql = `SELECT * FROM ${results[idx].Tables_in_nodemysql}`;
+                                    let query = db.query(sql, (err, rtn) => {
+                                        if (err) {
+                                            console.log('login error 3');
+                                            console.log('high');
+                                        }
+                                        else {
+                                            console.log(rtn);
+                                            res.json(rtn);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            res.json({ found: false });
+                            console.log('false');
+                        }
+                    });
+                    break;
+                }
+            }
+            */
+        }
+    });
 });
 
 //hashes the password
 async function hashPassword(password) {
-  try {
-    const hash = await argon2.hash(password);
-    return hash;
-  } catch (err) {
-    console.log(err);
-  }
+    try {
+        const hash = await argon2.hash(password);
+        return hash;
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 //checks if a hashed password and the normal password are the same and returns as boolean
 async function verifyPassword(hashPass, password) {
-  try {
-    const verify = await argon2.verify(hashPass, password);
-    return verify;
-  } catch (err) {
-    console.log(err);
-  }
+    try {
+        const verify = await argon2.verify(hashPass, password);
+        return verify;
+    } catch (err) {
+        console.log(err);
+    }
 }
 
-app.post('/createAccount', (req, res) => {
-  var username = req.body.username;
-  var password = req.body.password;
-  database.find({ username: req.body.username }, (err, data) => {
-    console.log(data.length);
-    if (data.length != 0) {
-      console.log("err");
-      console.log(data);
-      res.json({ success: "bad" });
-    }
-    else {
-      const hash = hashPassword(password).then(rtn => {
-        console.log(rtn);
-        req.body.password = rtn;
-        database.insert(req.body);
 
-        res.json({ success: "good" });
 
-        /*res.json({
-          username: req.body.username,
-          password: rtn
-        });*/
-      });
-    }
-  });
 
-  //database.insert(req.body);
 
-  //what is being sent back to the client
-  //res.json({
-  //status: 'success',
-  //DeckList: req.body
-  //});
+//create database
+app.get('/createdb', (req, res) => {
+    let sql = 'CREATE DATABASE nodemysql';
+    db.query(sql, err => {
+        if (err) {
+            console.log('error creating database');
+        }
+        else {
+            console.log('database created');
+        }
+    });
 });
 
 
-
-
-//console.log("high");
-
-/*
-const fs = require('fs');
-const content = 'Some content!';
-
-fs.writeFile('./Data.txt', content, err => {
-  if (err) {
-    console.error(err);
-  }
-  // file written successfully
+//create table
+app.get('/createTable', (req, res) => {
+    let sql = 'CREATE TABLE userList(id int AUTO_INCREMENT, username VARCHAR(255), password VARCHAR(255), deckListName VARCHAR(255), PRIMARY KEY(id))';
+    db.query(sql, (err) => {
+        if (err) {
+            console.log('error creating table');
+        }
+        else {
+            console.log('table created');
+        }
+    });
 });
-*/
 
-//const myURL = new URL('/foo', 'https://example.org/');
+//add data to table
+app.get('/insertDeck', (erq, res) => {
+    let post = { deckName: 'testDeck', front: 'frontVal', back: 'backVal', star: 'false' };
+    let sql = 'INSERT INTO deck SET ?';
+    let query = db.query(sql, post, err => {
+        if (err) {
+            console.log('error inserting data');
+        }
+        else {
+            console.log('data inserted into deck succesfully');
+        }
+    });
+});
 
-//console.log('good');
+//select data from table
+app.get('/getData', (req, res) => {
+    let sql = `SELECT * FROM deck`;
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            console.log('error getting data from table');
+        }
+        else {
+            //console.log(results[0]);
+            console.log(results);
+        }
+    });
+});
 
+//update data in table
+app.get('/updateData/:id', (req, res) => {
+    let newFront = 'newFrontVal';
+    let sql = `UPDATE deck SET front = '${newFront}' WHERE id = ${req.params.id}`;
+    let query = db.query(sql, err => {
+        if (err) {
+            console.log('error updating data in table');
+        }
+        else {
+            console.log('data in table updated successfully');
+        }
+    });
+});
+
+//delete data in table
+app.get('/deleteData/:id', (req, res) => {
+    let sql = `DELETE FROM employee WHERE id = $(req.param.id)`;
+    let query = db.query(sql, err => {
+        if (err) {
+            console.log('error deleting data from table');
+        }
+        else {
+            console.log('data deleted successfully');
+        }
+    });
+});
